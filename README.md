@@ -38,4 +38,4 @@ python patch_edge_copilot.py
 
 ## References
 
-[解决新版Edge浏览器右上角不显示Copilot图标的问题]
+[解决新版Edge浏览器右上角不显示Copilot图标的问题](https://zhuanlan.zhihu.com/p/673914163)
