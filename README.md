@@ -4,7 +4,7 @@ Language: [中文](README.zh_CN.md)
 
 ---
 
-This script patches the configuration file to solve the problem of disappearance of the Copilot icon in the upper right cornor of Edge Browser, due to its use in regions of which relevant services are unsupported (e.g. China Mainland and Russia).
+This script patches the configuration file to solve the problem of disappearance of the Copilot icon in the upper right cornor of Edge Browser due to its use in regions of which relevant services are unsupported (e.g. China Mainland and Russia).
 
 ## Environment
 
@@ -12,7 +12,7 @@ This script patches the configuration file to solve the problem of disappearance
 
 - Supported OS: Windows10+, macOS and Linux
 
-- Edge version: >=120
+- Edge version: >=119
 
 ## Note
 
@@ -34,7 +34,7 @@ pip3 install -r requirements.txt
 python patch_edge_copilot.py
 ```
 
-4. Restart the Edge and you will see the Copilot icon
+Wait for the script to finish executing, and then the Copilot icon will appear.
 
 ## References
 
