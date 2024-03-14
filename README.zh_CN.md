@@ -34,7 +34,7 @@ pip3 install -r requirements.txt
 python patch_edge_copilot.py
 ```
 
-4. 重启Edge浏览器Copilot图标就出现了
+待脚本完成执行，Copilot图标就出现了。
 
 ## 参考
 
