@@ -3,7 +3,6 @@ import sys
 import json
 import time
 import signal
-from threading import Thread
 
 import psutil
 
@@ -43,22 +42,24 @@ def get_version_and_user_data_path():
 
 
 def shutdown_edge():
-    threads = []
+    terminated_edges = []
     for process in psutil.process_iter():
-        if sys.platform == 'darwin':
-            if not process.name().startswith('Microsoft Edge') and not process.name().startswith('msedge'):
+        try:
+            if sys.platform == 'darwin':
+                if not process.name().startswith('Microsoft Edge'):
+                    continue
+            elif os.path.splitext(process.name())[0] != 'msedge':
                 continue
-        elif os.path.splitext(process.name())[0] != 'msedge':
-            continue
-        if sys.platform == 'win32':
-            thread = Thread(target=os.kill, args=(process.pid, signal.SIGTERM))
-        else:
-            thread = Thread(target=os.kill, args=(process.pid, signal.SIGKILL))
-        threads.append(thread)
-    for thread in threads:
-        thread.start()
-    for thread in threads:
-        thread.join()
+            elif not process.is_running():
+                continue
+            elif process.parent() is not None and process.parent().name() == process.name():
+                continue
+            location = process.exe()
+            process.kill()
+            terminated_edges.append(location)
+        except psutil.NoSuchProcess:
+            pass
+    return terminated_edges
 
 
 def get_last_version(user_data_path):
@@ -109,8 +110,9 @@ def main():
     if len(version_and_user_data_path) == 0:
         raise Exception('No available user data path found')
 
-    print('Shutdown Edge')
-    shutdown_edge()
+    terminated_edges = shutdown_edge()
+    if len(terminated_edges) > 0:
+        print('Shutdown Edge')
 
     for version, user_data_path in version_and_user_data_path.items():
         last_version = get_last_version(user_data_path)
@@ -126,6 +128,11 @@ def main():
         else:
             patch_local_state(user_data_path)
             patch_preferences(user_data_path)
+
+    if len(terminated_edges) > 0:
+        print('Restart Edge')
+        for edge in terminated_edges:
+            os.popen('"%s"' % edge)
 
     input('Enter to continue...')
 
