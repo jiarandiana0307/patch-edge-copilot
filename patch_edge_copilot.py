@@ -1,8 +1,7 @@
 import os
 import sys
 import json
-import time
-import signal
+import subprocess
 
 import psutil
 
@@ -42,7 +41,7 @@ def get_version_and_user_data_path():
 
 
 def shutdown_edge():
-    terminated_edges = []
+    terminated_edges = set()
     for process in psutil.process_iter():
         try:
             if sys.platform == 'darwin':
@@ -56,7 +55,7 @@ def shutdown_edge():
                 continue
             location = process.exe()
             process.kill()
-            terminated_edges.append(location)
+            terminated_edges.add(location)
         except psutil.NoSuchProcess:
             pass
     return terminated_edges
@@ -132,7 +131,7 @@ def main():
     if len(terminated_edges) > 0:
         print('Restart Edge')
         for edge in terminated_edges:
-            os.popen('"%s"' % edge)
+            subprocess.Popen([edge, '--start-maximized'], stderr=subprocess.DEVNULL)
 
     input('Enter to continue...')
 
