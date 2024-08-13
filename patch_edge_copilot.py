@@ -10,7 +10,7 @@ def get_version_and_user_data_path():
     os_and_user_data_paths = {
         'win32': {
             'stable': '~/AppData/Local/Microsoft/Edge/User Data',
-            'canary': '~/AppData/Local/Microsoft/Edge Canary/User Data',
+            'canary': '~/AppData/Local/Microsoft/Edge SxS/User Data',
             'dev': '~/AppData/Local/Microsoft/Edge Dev/User Data',
             'beta': '~/AppData/Local/Microsoft/Edge Beta/User Data',
         },
@@ -92,6 +92,9 @@ def patch_preferences(user_data_path):
             continue
 
         preferences_file = os.path.join(user_data_path, file, 'Preferences')
+        if not os.path.exists(preferences_file) or not os.path.isfile(preferences_file):
+            continue
+            
         with open(preferences_file, 'r', encoding='utf-8') as fp:
             preferences = json.load(fp)
 
