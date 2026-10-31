@@ -56,7 +56,7 @@ def shutdown_edge():
             location = process.exe()
             process.kill()
             terminated_edges.add(location)
-        except psutil.NoSuchProcess:
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
             pass
     return terminated_edges
 
@@ -73,11 +73,12 @@ def patch_local_state(user_data_path):
     local_state_file = os.path.join(user_data_path, 'Local State')
     if not os.path.exists(local_state_file):
         print('Failed to patch Local State. File not found', local_state_file)
+        return
 
     with open(local_state_file, 'r', encoding='utf-8') as fp:
         local_state = json.load(fp)
 
-    if local_state['variations_country'] != 'US':
+    if local_state.get('variations_country') != 'US':
         local_state['variations_country'] = 'US'
         with open(local_state_file, 'w', encoding='utf-8') as fp:
             json.dump(local_state, fp)
@@ -88,7 +89,8 @@ def patch_local_state(user_data_path):
 
 def patch_preferences(user_data_path):
     for file in os.listdir(user_data_path):
-        if not os.path.isdir(file) and file != 'Default' and not file.startswith('Profile '):
+        profile_path = os.path.join(user_data_path, file)
+        if not os.path.isdir(profile_path) and file != 'Default' and not file.startswith('Profile '):
             continue
 
         preferences_file = os.path.join(user_data_path, file, 'Preferences')
@@ -98,8 +100,8 @@ def patch_preferences(user_data_path):
         with open(preferences_file, 'r', encoding='utf-8') as fp:
             preferences = json.load(fp)
 
-        if preferences['browser'].get('chat_ip_eligibility_status') in [None, False]:
-            preferences['browser']['chat_ip_eligibility_status'] = True
+        if preferences.get('browser', {}).get('chat_ip_eligibility_status') in [None, False]:
+            preferences.setdefault('browser', {})['chat_ip_eligibility_status'] = True
             with open(preferences_file, 'w', encoding='utf-8') as fp:
                 json.dump(preferences, fp)
             print('Succeeded in patching Preferences of', file)
@@ -121,7 +123,6 @@ def main():
         if last_version is None:
             print('Failed to get version. File not found', os.path.join(user_data_path, 'Last Version'))
             continue
-        main_version = int(last_version.split('.')[0])
         print('Patching Edge', version, last_version, '"'+user_data_path+'"')
         patch_local_state(user_data_path)
         patch_preferences(user_data_path)
